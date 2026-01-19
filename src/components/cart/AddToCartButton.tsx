@@ -1,6 +1,5 @@
 "use client";
 
-import { useCart } from "@/context/cart-context";
 import { useToast } from "@/hooks/useToast";
 
 type Props = {
@@ -11,14 +10,13 @@ type Props = {
 };
 
 export function AddToCartButton({ name, price, image, id }: Props) {
-  const { addToCart } = useCart();
   const { showToast } = useToast();
 
   return (
     <button
       type="button"
       onClick={() => {
-        addToCart({ id, name, price, image });
+        // TODO: Implement cart functionality with RTK Query
         showToast({
           title: "Agregado al carrito",
           description: name,

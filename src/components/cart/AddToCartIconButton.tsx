@@ -1,6 +1,5 @@
 "use client";
 
-import { useCart } from "@/context/cart-context";
 import { useToast } from "@/hooks/useToast";
 
 type Props = {
@@ -11,13 +10,7 @@ type Props = {
 };
 
 export function AddToCartIconButton({ id, name, price, image }: Props) {
-  const { cart, addToCart } = useCart();
   const { showToast } = useToast();
-
-  const qty =
-    cart.find((it) => it.id === id)?.qty ??
-    cart.find((it) => it.name === name)?.qty ??
-    0;
 
   return (
     <button
@@ -29,15 +22,14 @@ export function AddToCartIconButton({ id, name, price, image }: Props) {
         e.preventDefault();
         e.stopPropagation();
 
-        addToCart({ id, name, price, image });
-
+        // TODO: Implement cart functionality with RTK Query
         showToast({
           title: "Agregado al carrito",
           description: name,
         });
       }}
     >
-      {qty > 0 ? qty : "+"}
+      +
     </button>
   );
 }

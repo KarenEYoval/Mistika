@@ -2,12 +2,12 @@
 
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
-import { CartProvider } from "@/context/cart-context";
+import { StoreProvider } from "./StoreProvider";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <>
-      <CartProvider>{children}</CartProvider>
+    <StoreProvider>
+      {children}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -21,6 +21,6 @@ export function Providers({ children }: { children: ReactNode }) {
           },
         }}
       />
-    </>
+    </StoreProvider>
   );
 }
