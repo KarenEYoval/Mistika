@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
     const validationResult = mailRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
-      console.error("[Mail API] Validation error:", validationResult.error.errors);
+      console.error("[Mail API] Validation error:", validationResult.error.issues);
       return NextResponse.json(
         {
           ok: false,
           error: "Invalid request payload",
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         },
         { status: 400 }
       );
