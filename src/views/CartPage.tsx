@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, ArrowLeft, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 
 export function CartPage() {
@@ -13,6 +15,13 @@ export function CartPage() {
     totalPrice,
     totalQuantity,
   } = useCart();
+
+  const [showClearModal, setShowClearModal] = useState(false);
+
+  const handleClearCart = () => {
+    clearCart();
+    setShowClearModal(false);
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 text-black">
@@ -33,7 +42,7 @@ export function CartPage() {
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={clearCart}
+              onClick={() => setShowClearModal(true)}
               type="button"
               className="rounded-full border border-black/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-black/60 transition hover:bg-black/5"
             >
@@ -191,6 +200,76 @@ export function CartPage() {
           </aside>
         </div>
       )}
+
+      {/* Clear cart confirmation modal */}
+      <AnimatePresence>
+        {showClearModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowClearModal(false)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 px-4"
+            >
+              <div className="relative overflow-hidden rounded-[32px] border border-black/10 bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+                {/* Close button */}
+                <button
+                  onClick={() => setShowClearModal(false)}
+                  className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full border border-black/10 bg-black/5 text-black/60 transition hover:bg-black/10"
+                  aria-label="Cerrar"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+
+                {/* Icon */}
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-black/5">
+                  <AlertTriangle size={32} className="text-black/70" aria-hidden="true" />
+                </div>
+
+                {/* Title */}
+                <h2 className="mb-3 text-center text-2xl font-semibold tracking-[0.05em]">
+                  ¿Vaciar carrito?
+                </h2>
+
+                {/* Description */}
+                <p className="mb-8 text-center text-sm leading-relaxed text-black/70">
+                  Esta acción eliminará todos los artículos de tu carrito. Esta acción no se puede deshacer.
+                </p>
+
+                {/* Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowClearModal(false)}
+                    type="button"
+                    className="flex-1 rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-black transition hover:bg-black/5"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleClearCart}
+                    type="button"
+                    className="flex-1 rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    Vaciar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
