@@ -63,6 +63,12 @@ declare global {
     totalPrice: number;
     productName: string;
     createdAt: Date;
+    product?: {
+      id: number;
+      name: string;
+      imageUrl: string | null;
+      category?: string;
+    };
   };
 
   /**

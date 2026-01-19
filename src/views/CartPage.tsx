@@ -239,7 +239,7 @@ export function CartPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] sm:p-8"
+                  className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] sm:p-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
               <div className="mb-6 flex items-center justify-between">
                 <div>

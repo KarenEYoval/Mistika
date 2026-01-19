@@ -40,8 +40,11 @@ export function OrderDetailView() {
   const order = orderData?.data;
   const errorMessage = getApiErrorMessage(error);
 
-  const formatPrice = (price: number) => {
-    return `$${price.toFixed(2)}`;
+  const formatPrice = (price: number | null | string) => {
+    if (price === null || price === undefined) return "—";
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return "—";
+    return `$${numPrice.toFixed(2)}`;
   };
 
   const formatDate = (date: Date | string) => {
@@ -124,9 +127,9 @@ export function OrderDetailView() {
               {order.orderNumber}
             </h1>
             <span
-              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${statusColors[order.status]}`}
+              className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] ${statusColors[order.status as OrderStatus]}`}
             >
-              {statusLabels[order.status]}
+              {statusLabels[order.status as OrderStatus]}
             </span>
           </div>
           <p className="mt-2 text-base text-black/60">
