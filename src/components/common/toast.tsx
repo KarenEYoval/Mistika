@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 type Toast = { id: string; title: string; description?: string };
 
@@ -10,7 +11,7 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const showToast = ({ title, description }: Omit<Toast, "id">) => {

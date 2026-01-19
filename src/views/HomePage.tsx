@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function HomePage() {
+export function HomePage() {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center flex flex-col"

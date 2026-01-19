@@ -1,13 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { prisma } from "@/config/prisma";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/components/cart/AddToCartButton";    
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 
-type Props = { params: { id: string } };
+type ProductPageProps = { id: number };
 
-export default async function ProductPage({ params }: Props) {
-  const id = Number(params.id);
-  if (!Number.isFinite(id)) notFound();
-
+export async function ProductPage({ id }: ProductPageProps) {
   const producto = await prisma.productos.findUnique({
     where: { id },
   });
@@ -16,9 +14,9 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <a href="/shop" className="text-sm text-neutral-600 hover:underline">
+      <Link href="/shop" className="text-sm text-neutral-600 hover:underline">
         ← Volver
-      </a>
+      </Link>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
         <div className="aspect-square overflow-hidden rounded-3xl bg-neutral-100">

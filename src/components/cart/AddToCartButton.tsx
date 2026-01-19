@@ -14,6 +14,7 @@ export function AddToCartButton({ name, price, image, id }: Props) {
 
   return (
     <button
+      type="button"
       onClick={() => addToCart({ id, name, price, image })}
       className="mt-6 w-full rounded-2xl bg-black px-5 py-3 text-white hover:opacity-90"
     >

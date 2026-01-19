@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@/style/globals.css";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -14,18 +15,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MISTIKA",
+  title: {
+    default: "MISTIKA",
+    template: "%s | MISTIKA",
+  },
   description: "Velas artesanales",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

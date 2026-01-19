@@ -1,16 +1,12 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/config/prisma";
 import { AddToCartIconButton } from "@/components/cart/AddToCartIconButton";
 import ProductCarousel from "@/components/shop/ProductCarousel";
 
-export default async function ShopPage() {
+export async function ShopPage() {
   const productos = await prisma.productos.findMany({
     orderBy: { id: "desc" },
   });
-  const carouselImages = productos
-    .filter((p) => p.imagen)
-    .slice(0, 10)
-    .map((p) => ({ src: p.imagen as string, alt: p.nombre }));
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-10">
@@ -18,9 +14,8 @@ export default async function ShopPage() {
         <ProductCarousel />
       </div>
 
-      <div className="relative mb-10">
-        <div className="absolute right-0 top-0">
-          <br></br>
+      <div className="relative mb-10 pt-10">
+        <div className="absolute right-0 top-4">
           <Link
             href="/cart"
             className="rounded-full bg-black px-7 py-3 text-base font-medium text-white hover:opacity-90"
@@ -29,8 +24,6 @@ export default async function ShopPage() {
           </Link>
         </div>
         <div className="text-center">
-          <br></br>
-          <br></br>
           <h1 className="text-4xl font-semibold tracking-[0.25em]">MISTIKA</h1>
 
           <h3 className="mx-auto mt-3 max-w-xl text-sm text-neutral-900">

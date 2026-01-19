@@ -1,6 +1,7 @@
 "use client";
 
-import React, {
+import type { ReactNode } from "react";
+import {
   createContext,
   useContext,
   useEffect,
@@ -42,7 +43,7 @@ function parsePrice(labelOrNumber: unknown): number {
   return Number.parseFloat(s.replace(",", ".")) || 0;
 }
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   useEffect(() => {

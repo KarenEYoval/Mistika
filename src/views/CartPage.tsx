@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 
-export default function CartPage() {
+export function CartPage() {
   const { cart, removeFromCart, updateQty, clearCart, totalPrice, totalQty } = useCart();
 
   return (
@@ -17,6 +17,7 @@ export default function CartPage() {
         <div className="flex gap-2">
           <button
             onClick={clearCart}
+            type="button"
             className="rounded-xl border px-4 py-2 text-sm hover:bg-neutral-50"
           >
             Vaciar
@@ -53,6 +54,7 @@ export default function CartPage() {
                   />
                   <button
                     onClick={() => removeFromCart(it.name)}
+                    type="button"
                     className="rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
                   >
                     Quitar
@@ -68,7 +70,10 @@ export default function CartPage() {
               <p className="text-xl font-semibold">${totalPrice.toFixed(2)} MXN</p>
             </div>
 
-            <button className="mt-4 w-full rounded-2xl bg-black px-5 py-3 text-white hover:opacity-90">
+            <button
+              type="button"
+              className="mt-4 w-full rounded-2xl bg-black px-5 py-3 text-white hover:opacity-90"
+            >
               Ir a pagar
             </button>
           </div>

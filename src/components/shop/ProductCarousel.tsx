@@ -54,6 +54,9 @@ export default function ProductCarousel() {
               {slides.map((_, i) => (
                 <button
                   key={i}
+                  type="button"
+                  aria-label={`Ir a la diapositiva ${i + 1}`}
+                  aria-current={i === index}
                   onClick={() => setIndex(i)}
                   className={`h-2 w-2 rounded-full ${
                     i === index ? "bg-white" : "bg-white/40"
