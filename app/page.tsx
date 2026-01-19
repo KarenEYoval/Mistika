@@ -165,7 +165,7 @@ export default function HomePage() {
           <>
             <motion.div
               ref={gridRef}
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"
+              className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4"
               variants={gridVariants}
               initial="hidden"
               animate={gridInView ? "show" : "show"}

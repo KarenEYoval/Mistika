@@ -22,7 +22,7 @@ export default function ProductCarousel() {
 
   return (
     <section className="relative w-screen overflow-hidden">
-      <div className="relative h-[80vh] min-h-[600px] w-full">
+      <div className="relative h-screen sm:h-[80vh] sm:min-h-[600px] w-full">
         {slides.map((slide, i) => (
           <div
             key={slide.src}
