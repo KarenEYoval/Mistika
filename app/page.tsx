@@ -64,7 +64,7 @@ export default function HomePage() {
       <div className="relative">
         <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
           <ProductCarousel />
-          
+
           <motion.section
             className="absolute inset-0 z-10 mx-auto flex max-w-6xl flex-col px-6 pt-16 pb-8 sm:px-10"
             initial="hidden"
@@ -72,7 +72,7 @@ export default function HomePage() {
             variants={heroVariants}
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/90 drop-shadow-lg">
+              <p className="uppercase tracking-[0.4em] text-white/90 drop-shadow-lg text-[32px] font-bold">
                 Mistika
               </p>
               <Link
@@ -88,7 +88,7 @@ export default function HomePage() {
                 ) : null}
               </Link>
             </div>
-            
+
             <div className="mt-auto mb-8">
               <h1 className="text-4xl font-semibold tracking-[0.08em] text-white drop-shadow-lg sm:text-5xl lg:text-6xl mb-3">
                 Bienvenido a tu ritual diario
