@@ -88,15 +88,17 @@ export function OrderDetailAdminView() {
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
   const [deleteOrder, { isLoading: isDeleting }] = useDeleteOrderMutation();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
 
   const order = orderData?.data;
   const errorMessage = getApiErrorMessage(error);
 
-  const handleStatusChange = async (newStatus: OrderStatus) => {
-    if (!order) return;
+  const handleStatusChange = async () => {
+    if (!order || !pendingStatus) return;
     try {
-      await updateOrder({ id: order.id, status: newStatus }).unwrap();
+      await updateOrder({ id: order.id, status: pendingStatus }).unwrap();
       toast.success("Estado actualizado");
+      setPendingStatus(null);
     } catch (err) {
       toast.error("Error al actualizar el estado");
     }
@@ -506,7 +508,7 @@ export function OrderDetailAdminView() {
                     return (
                       <button
                         key={key}
-                        onClick={() => handleStatusChange(key)}
+                        onClick={() => setPendingStatus(key)}
                         disabled={isUpdating || isActive}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition ${
                           isActive
@@ -524,6 +526,68 @@ export function OrderDetailAdminView() {
             </div>
           </motion.div>
         </div>
+
+        {/* Status Change Modal */}
+        <AnimatePresence>
+          {pendingStatus && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                onClick={() => setPendingStatus(null)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 px-4"
+              >
+                {(() => {
+                  const newStatusConfig = statusConfig[pendingStatus];
+                  const NewStatusIcon = newStatusConfig.icon;
+                  return (
+                    <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl">
+                      <div className="p-6 text-center">
+                        <div
+                          className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ${newStatusConfig.bg}`}
+                        >
+                          <NewStatusIcon size={28} className={newStatusConfig.color} />
+                        </div>
+                        <h3 className="mb-2 text-xl font-semibold">
+                          Cambiar estado
+                        </h3>
+                        <p className="text-sm text-black/60">
+                          ¿Cambiar el estado del pedido a{" "}
+                          <span className={`font-semibold ${newStatusConfig.color}`}>
+                            {newStatusConfig.label}
+                          </span>
+                          ?
+                        </p>
+                      </div>
+                      <div className="flex border-t border-black/10">
+                        <button
+                          onClick={() => setPendingStatus(null)}
+                          className="flex-1 border-r border-black/10 py-3 font-medium text-black/70 transition hover:bg-black/5"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={handleStatusChange}
+                          disabled={isUpdating}
+                          className={`flex-1 py-3 font-semibold transition hover:bg-black/5 disabled:opacity-50 ${newStatusConfig.color}`}
+                        >
+                          {isUpdating ? "Actualizando..." : "Confirmar"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Delete Modal */}
         <AnimatePresence>
