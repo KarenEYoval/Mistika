@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/api-helper";
+import { sendMail } from "@/mail/sendMail";
+import type { OrderStatusPayload } from "@/mail/types";
 
 /**
  * GET /api/orders/[id]
@@ -106,6 +108,22 @@ export async function PUT(
 
     const body = await request.json();
 
+    // Get current order to check if status is changing
+    const currentOrder = await prisma.orders.findUnique({
+      where: { id },
+      select: { status: true, customerEmail: true, customerName: true, orderNumber: true },
+    });
+
+    if (!currentOrder) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Order not found",
+        },
+        { status: 404 }
+      );
+    }
+
     const updateData: any = {};
     if (body.status !== undefined) updateData.status = body.status;
     if (body.paymentStatus !== undefined) updateData.paymentStatus = body.paymentStatus;
@@ -129,6 +147,33 @@ export async function PUT(
         },
       },
     });
+
+    // Send email notification if status changed to processing, shipped, or delivered
+    const statusesToNotify = ["processing", "shipped", "delivered"];
+    if (
+      body.status &&
+      body.status !== currentOrder.status &&
+      statusesToNotify.includes(body.status)
+    ) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const orderUrl = `${baseUrl}/orders/${order.orderNumber}`;
+
+      const emailPayload: OrderStatusPayload = {
+        name: currentOrder.customerName,
+        orderNumber: order.orderNumber,
+        status: body.status as "processing" | "shipped" | "delivered",
+        orderUrl,
+      };
+
+      // Send email asynchronously (don't wait for it)
+      sendMail({
+        type: "order-status",
+        to: currentOrder.customerEmail,
+        payload: emailPayload,
+      }).catch((err) => {
+        console.error("[Orders API] Failed to send status email:", err);
+      });
+    }
 
     return NextResponse.json({
       success: true,
