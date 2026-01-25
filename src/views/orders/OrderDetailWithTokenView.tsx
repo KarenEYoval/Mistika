@@ -26,11 +26,11 @@ const statusLabels: Record<OrderStatus, string> = {
 export function OrderDetailWithTokenView() {
   const params = useParams();
   const searchParams = useSearchParams();
-  
+
   const idParam = params?.id;
   const id = Array.isArray(idParam) ? idParam[0] : idParam ?? "";
   const orderId = parseInt(id);
-  
+
   const token = searchParams.get("token");
   const orderNumber = searchParams.get("orderNumber");
 

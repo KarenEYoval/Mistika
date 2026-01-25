@@ -19,6 +19,7 @@ import {
 import { useFetchOrdersQuery } from "@/store/features/orders/ordersApi";
 import { ServerError } from "@/components/ui/ServerError";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const statusConfig: Record<
   OrderStatus,
@@ -62,8 +63,11 @@ const statusConfig: Record<
 };
 
 export function OrdersAdminView() {
+  const params = useSearchParams();
+  const statusParams = params.get("status") || "all";
+
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">(statusParams as OrderStatus | "all");
   const [searchQuery, setSearchQuery] = useState("");
   const limit = 15;
 
@@ -162,11 +166,10 @@ export function OrdersAdminView() {
                   setStatusFilter(tab.key as OrderStatus | "all");
                   setPage(1);
                 }}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
-                  statusFilter === tab.key
-                    ? "bg-black text-white"
-                    : "bg-white border border-black/10 text-black/70 hover:bg-black/5"
-                }`}
+                className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${statusFilter === tab.key
+                  ? "bg-black text-white"
+                  : "bg-white border border-black/10 text-black/70 hover:bg-black/5"
+                  }`}
               >
                 {tab.label}
               </button>
