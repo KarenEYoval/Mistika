@@ -5,7 +5,7 @@ import { useCart } from "@/context/cart-context";
 
 type Props = CartItemInput;
 
-export function AddToCartButton({ name, price, imageUrl, id }: Props) {
+export function AddToCartButton({ name, price, imageUrl, id, stock }: Props) {
   const { showToast } = useToast();
   const { addToCart } = useCart();
 
@@ -13,7 +13,7 @@ export function AddToCartButton({ name, price, imageUrl, id }: Props) {
     <button
       type="button"
       onClick={() => {
-        addToCart({ id, name, price, imageUrl });
+        addToCart({ id, name, price, imageUrl, stock });
         showToast({
           title: "Agregado al carrito",
           description: name,

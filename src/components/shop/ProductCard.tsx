@@ -43,6 +43,7 @@ export default function ProductCard({ product }: Props) {
             name={product.name}
             price={displayPrice?.toString() ?? "0"}
             imageUrl={product.imageUrl ?? null}
+            stock={product.stock}
           />
         </div>
       </div>

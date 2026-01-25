@@ -120,6 +120,7 @@ declare global {
       productId: number;
       quantity: number;
       unitPrice: number;
+      productName?: string;
     }[];
   };
 

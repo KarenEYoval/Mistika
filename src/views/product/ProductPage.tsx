@@ -59,6 +59,9 @@ export function ProductPage() {
 
   const currentQuantity = cartItem?.quantity || 0;
   const isInCart = currentQuantity > 0;
+  const stock = Number(product?.stock ?? 0);
+  const isInactive = !product?.isActive;
+  const isAvailable = !isInactive && stock > 0;
 
   useEffect(() => {
     if (isErrorProduct) {
@@ -73,17 +76,26 @@ export function ProductPage() {
       removeFromCart(product.name);
       toast.success(`${product.name} eliminado del carrito`);
     } else {
-      updateQuantity(product.name, newQuantity);
+      if (stock > 0 && newQuantity > stock) {
+        updateQuantity(product.name, stock);
+      } else {
+        updateQuantity(product.name, newQuantity);
+      }
     }
   };
 
   const handleAddToCart = () => {
     if (!product) return;
+    if (!isAvailable) {
+      toast.error("Producto sin stock");
+      return;
+    }
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price?.toString() ?? "0",
       imageUrl: product.imageUrl ?? null,
+      stock: product.stock ?? 0,
     });
     toast.success(`${product.name} agregado al carrito`);
   };
@@ -133,10 +145,6 @@ export function ProductPage() {
       </main>
     );
   }
-
-  const stock = Number(product.stock ?? 0);
-  const isInactive = !product.isActive;
-  const isAvailable = !isInactive && stock > 0;
 
   const stockColor = isInactive
     ? "text-black/30"
@@ -263,6 +271,8 @@ export function ProductPage() {
                       <input
                         type="number"
                         min={0}
+                        max={stock}
+                        disabled={!isAvailable}
                         value={currentQuantity}
                         onChange={(e) =>
                           handleQuantityChange(Number(e.target.value) || 0)
@@ -273,7 +283,8 @@ export function ProductPage() {
                         type="button"
                         onClick={() => handleQuantityChange(currentQuantity + 1)}
                         aria-label="Aumentar cantidad"
-                        className="grid h-12 w-12 place-items-center rounded-full border border-black/10 bg-white text-black transition hover:scale-105 hover:bg-black/5"
+                        disabled={!isAvailable || (stock > 0 && currentQuantity >= stock)}
+                        className="grid h-12 w-12 place-items-center rounded-full border border-black/10 bg-white text-black transition hover:scale-105 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Plus size={20} aria-hidden="true" />
                       </button>
@@ -303,7 +314,8 @@ export function ProductPage() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full rounded-[24px] bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5 hover:shadow-lg"
+                  disabled={!isAvailable}
+                  className="w-full rounded-[24px] bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-black/60 disabled:shadow-none"
                 >
                   Agregar al carrito
                 </button>

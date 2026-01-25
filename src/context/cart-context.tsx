@@ -24,8 +24,26 @@ function parsePrice(labelOrNumber: unknown): number {
   return Number.parseFloat(sanitized.replace(",", ".")) || 0;
 }
 
+function normalizeStock(value: unknown): number | undefined {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return undefined;
+  return Math.max(0, Math.floor(parsed));
+}
+
+function clampQuantity(quantity: number, stock?: number): number {
+  const normalized = Math.max(1, Number(quantity) || 1);
+  if (typeof stock === "number" && Number.isFinite(stock)) {
+    const maxStock = Math.max(0, Math.floor(stock));
+    if (maxStock > 0) {
+      return Math.min(normalized, maxStock);
+    }
+  }
+  return normalized;
+}
+
 function normalizeItem(item: CartItem): CartItem {
-  const quantity = Math.max(1, Number(item.quantity || 1));
+  const stock = normalizeStock(item.stock);
+  const quantity = clampQuantity(item.quantity, stock);
   const priceNumber = Number.isFinite(item.priceNumber)
     ? item.priceNumber
     : parsePrice(item.price);
@@ -34,6 +52,7 @@ function normalizeItem(item: CartItem): CartItem {
     ...item,
     quantity,
     priceNumber,
+    stock,
   };
 }
 
@@ -69,20 +88,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (idx !== -1) {
         const copy = [...prev];
         const existing = normalizeItem(copy[idx]);
+        const stock = normalizeStock(item.stock ?? existing.stock);
+        if (stock !== undefined && stock <= 0) {
+          return prev;
+        }
+        const nextQuantity = clampQuantity(existing.quantity + 1, stock);
+        if (nextQuantity === existing.quantity) {
+          return prev;
+        }
         copy[idx] = {
           ...existing,
-          quantity: existing.quantity + 1,
+          quantity: nextQuantity,
           priceNumber: parsePrice(existing.priceNumber ?? item.price),
+          stock: stock ?? existing.stock,
         };
         return copy;
       }
 
+      const stock = normalizeStock(item.stock);
+      if (stock !== undefined && stock <= 0) {
+        return prev;
+      }
+      const quantity = clampQuantity(1, stock);
       return [
         ...prev,
         normalizeItem({
           ...item,
-          quantity: 1,
+          quantity,
           priceNumber: parsePrice(item.price),
+          stock,
         } as CartItem),
       ];
     });
@@ -96,7 +130,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         p.name === name
           ? {
               ...p,
-              quantity: Math.max(1, Number(quantity) || 1),
+              quantity: clampQuantity(quantity, normalizeStock(p.stock)),
               priceNumber: parsePrice(p.priceNumber ?? p.price),
             }
           : p,

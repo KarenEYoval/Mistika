@@ -14,6 +14,7 @@ declare global {
     price: number | string;
     priceNumber: number;
     quantity: number;
+    stock?: number;
   };
 
   /**
@@ -24,6 +25,7 @@ declare global {
     name: string;
     imageUrl?: string | null;
     price: number | string;
+    stock?: number;
   };
 
   /**

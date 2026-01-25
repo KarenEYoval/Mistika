@@ -115,6 +115,12 @@ export function CartPage() {
                   {cart.map((item, index) => {
                     const quantity = Math.max(1, Number(item.quantity) || 1);
                     const itemTotal = (Number(item.priceNumber) || 0) * quantity;
+                    const maxStock =
+                      typeof item.stock === "number" && Number.isFinite(item.stock)
+                        ? Math.max(0, Math.floor(item.stock))
+                        : null;
+                    const isMaxed =
+                      maxStock !== null && maxStock > 0 && quantity >= maxStock;
 
                     return (
                       <motion.div
@@ -167,8 +173,16 @@ export function CartPage() {
                                 {quantity}
                               </span>
                               <button
-                                onClick={() => updateQuantity(item.name, quantity + 1)}
-                                className="flex h-8 w-8 items-center justify-center text-black/60 transition hover:text-black"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.name,
+                                    isMaxed || maxStock === 0
+                                      ? quantity
+                                      : quantity + 1,
+                                  )
+                                }
+                                disabled={isMaxed || maxStock === 0}
+                                className="flex h-8 w-8 items-center justify-center text-black/60 transition hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Aumentar cantidad"
                               >
                                 <Plus size={14} />

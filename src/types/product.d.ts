@@ -62,6 +62,7 @@ declare global {
     name: string;
     price: number | string;
     imageUrl?: string | null;
+    stock?: number;
   };
 }
 
