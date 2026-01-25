@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   User,
   Mail,
@@ -12,7 +11,6 @@ import {
   Shield,
   ExternalLink,
   FileText,
-  ChevronDown,
 } from "lucide-react";
 import { useCreateOrderMutation } from "@/store/features/orders/ordersApi";
 import { useCart } from "@/context/cart-context";
@@ -42,7 +40,8 @@ const shippingOptions = [
 export function CheckoutForm({ totalPrice, onClose }: Props) {
   const router = useRouter();
   const { cart, clearCart } = useCart();
-  const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const [createOrder, { isLoading: isCreatingOrder }] =
+    useCreateOrderMutation();
 
   const [formData, setFormData] = useState({
     customerName: "",
@@ -58,7 +57,9 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -106,8 +107,12 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
         // For now, redirect to order confirmation
         router.push(`/orders/${result.data.orderNumber}`);
       }
-    } catch (error: any) {
-      toast.error(error?.data?.error || "Error al crear el pedido");
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === "object" && "data" in error
+          ? (error as { data?: { error?: string } }).data?.error
+          : null;
+      toast.error(message || "Error al crear el pedido");
     }
   };
 
