@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -18,6 +19,10 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+
+const HOLD_MS = 5 * 60 * 1000;
+const HOLD_KEY = "checkout_hold_ends_at_v1";
+const HOLD_ACTIVE_KEY = "checkout_hold_active_v1";
 
 export function CartPage() {
   const {
@@ -40,6 +45,99 @@ export function CartPage() {
   const shippingCost = totalPrice >= 500 ? 0 : 150;
   const tax = totalPrice * 0.16;
   const finalTotal = totalPrice + shippingCost + tax;
+
+  const router = useRouter();
+
+  const [holdEndsAt, setHoldEndsAt] = useState<number | null>(null);
+  const [holdRemainingMs, setHoldRemainingMs] = useState<number>(0);
+  const intervalRef = useRef<number | null>(null);
+  const startHold = () => {
+    const endsAt = Date.now() + HOLD_MS;
+    setHoldEndsAt(endsAt);
+    setHoldRemainingMs(HOLD_MS);
+    localStorage.setItem(HOLD_KEY, String(endsAt));
+    localStorage.setItem(HOLD_ACTIVE_KEY, "1");
+  };
+
+  const stopHold = () => {
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setHoldEndsAt(null);
+    setHoldRemainingMs(0);
+    localStorage.removeItem(HOLD_KEY);
+    localStorage.removeItem(HOLD_ACTIVE_KEY);
+  };
+
+  const closeCheckout = () => {
+    stopHold();
+    setShowCheckout(false);
+  };
+
+  useEffect(() => {
+    const active = localStorage.getItem(HOLD_ACTIVE_KEY) === "1";
+    const raw = localStorage.getItem(HOLD_KEY);
+    if (!active) {
+      localStorage.removeItem(HOLD_KEY);
+      return;
+    }
+
+    if (!raw) return;
+
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= Date.now()) {
+      stopHold();
+      return;
+    }
+
+    setHoldEndsAt(parsed);
+    setHoldRemainingMs(Math.max(0, parsed - Date.now()));
+  }, []);
+
+  useEffect(() => {
+    if (!holdEndsAt) return;
+
+    const tick = () => {
+      const remaining = Math.max(0, holdEndsAt - Date.now());
+      setHoldRemainingMs(remaining);
+
+      if (remaining <= 0) {
+        stopHold();
+        setShowCheckout(false);
+        router.push("/");
+      }
+    };
+
+    tick();
+    intervalRef.current = window.setInterval(tick, 250);
+
+    return () => {
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [holdEndsAt, router]);
+
+  useEffect(() => {
+    if (showCheckout && !holdEndsAt) {
+      startHold();
+    }
+  }, [showCheckout]);
+
+  const holdLabel = (() => {
+    const totalSec = Math.ceil(holdRemainingMs / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  })();
+
+  const openCheckout = () => {
+    stopHold();
+    startHold();
+    setShowCheckout(true);
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white via-white to-black/5">
@@ -89,7 +187,9 @@ export function CartPage() {
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-black/5">
               <ShoppingBag size={40} className="text-black/30" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold">Tu carrito está vacío</h2>
+            <h2 className="mb-2 text-xl font-semibold">
+              Tu carrito está vacío
+            </h2>
             <p className="mb-6 text-black/60">
               Descubre nuestras velas artesanales y materiales de calidad
             </p>
@@ -103,7 +203,6 @@ export function CartPage() {
           </motion.div>
         ) : (
           <div className="grid gap-8 lg:grid-cols-3">
-            {/* Products List */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -114,7 +213,8 @@ export function CartPage() {
                 <div className="divide-y divide-black/5">
                   {cart.map((item, index) => {
                     const quantity = Math.max(1, Number(item.quantity) || 1);
-                    const itemTotal = (Number(item.priceNumber) || 0) * quantity;
+                    const itemTotal =
+                      (Number(item.priceNumber) || 0) * quantity;
 
                     return (
                       <motion.div
@@ -156,7 +256,10 @@ export function CartPage() {
                             <div className="inline-flex items-center rounded-lg border border-black/10 bg-black/5">
                               <button
                                 onClick={() =>
-                                  updateQuantity(item.name, Math.max(1, quantity - 1))
+                                  updateQuantity(
+                                    item.name,
+                                    Math.max(1, quantity - 1),
+                                  )
                                 }
                                 className="flex h-8 w-8 items-center justify-center text-black/60 transition hover:text-black"
                                 aria-label="Reducir cantidad"
@@ -167,7 +270,9 @@ export function CartPage() {
                                 {quantity}
                               </span>
                               <button
-                                onClick={() => updateQuantity(item.name, quantity + 1)}
+                                onClick={() =>
+                                  updateQuantity(item.name, quantity + 1)
+                                }
                                 className="flex h-8 w-8 items-center justify-center text-black/60 transition hover:text-black"
                                 aria-label="Aumentar cantidad"
                               >
@@ -188,7 +293,9 @@ export function CartPage() {
 
                         {/* Price */}
                         <div className="text-right">
-                          <p className="text-lg font-bold">${itemTotal.toFixed(2)}</p>
+                          <p className="text-lg font-bold">
+                            ${itemTotal.toFixed(2)}
+                          </p>
                         </div>
                       </motion.div>
                     );
@@ -207,8 +314,13 @@ export function CartPage() {
                     key={i}
                     className="flex items-center gap-3 rounded-xl bg-black/5 px-4 py-3"
                   >
-                    <benefit.icon size={18} className="shrink-0 text-black/50" />
-                    <span className="text-sm text-black/70">{benefit.text}</span>
+                    <benefit.icon
+                      size={18}
+                      className="shrink-0 text-black/50"
+                    />
+                    <span className="text-sm text-black/70">
+                      {benefit.text}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -238,7 +350,10 @@ export function CartPage() {
                           {item.name} × {item.quantity}
                         </span>
                         <span className="shrink-0 font-medium">
-                          ${((item.priceNumber || 0) * (item.quantity || 1)).toFixed(2)}
+                          $
+                          {(
+                            (item.priceNumber || 0) * (item.quantity || 1)
+                          ).toFixed(2)}
                         </span>
                       </div>
                     ))}
@@ -247,15 +362,9 @@ export function CartPage() {
                   <div className="space-y-3 border-t border-black/10 pt-4 text-sm">
                     <div className="flex justify-between">
                       <span className="text-black/60">Subtotal</span>
-                      <span className="font-medium">${totalPrice.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-black/60">Envío</span>
-                      {shippingCost === 0 ? (
-                        <span className="font-medium text-green-600">Gratis</span>
-                      ) : (
-                        <span className="font-medium">${shippingCost.toFixed(2)}</span>
-                      )}
+                      <span className="font-medium">
+                        ${totalPrice.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-black/60">IVA (16%)</span>
@@ -266,13 +375,17 @@ export function CartPage() {
                   <div className="mt-4 border-t border-black/10 pt-4">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold">Total</span>
-                      <span className="text-2xl font-bold">${finalTotal.toFixed(2)}</span>
+                      <span className="text-2xl font-bold">
+                        ${finalTotal.toFixed(2)}
+                      </span>
                     </div>
-                    <p className="mt-1 text-xs text-black/50">MXN, impuestos incluidos</p>
+                    <p className="mt-1 text-xs text-black/50">
+                      MXN, impuestos incluidos
+                    </p>
                   </div>
 
                   <button
-                    onClick={() => setShowCheckout(true)}
+                    onClick={openCheckout}
                     className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-black py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-lg"
                   >
                     <CreditCard size={18} />
@@ -280,7 +393,8 @@ export function CartPage() {
                   </button>
 
                   <p className="mt-4 text-center text-xs text-black/50">
-                    Serás redirigido a Mercado Pago para completar tu compra de forma segura
+                    Serás redirigido a Mercado Pago para completar tu compra de
+                    forma segura
                   </p>
                 </div>
               </div>
@@ -297,7 +411,7 @@ export function CartPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-                onClick={() => setShowCheckout(false)}
+                onClick={closeCheckout}
               />
               <motion.div
                 initial={{ opacity: 0, y: "100%" }}
@@ -310,13 +424,16 @@ export function CartPage() {
                   {/* Header */}
                   <div className="flex items-center justify-between border-b border-black/10 px-5 py-4">
                     <div>
-                      <h2 className="text-xl font-semibold">Finalizar compra</h2>
+                      <h2 className="text-xl font-semibold">
+                        Finalizar compra
+                      </h2>
                       <p className="text-sm text-black/50">
-                        Completa tus datos para continuar
+                        Completa tus datos para continuar · Expira en{" "}
+                        <span className="font-semibold">{holdLabel}</span>
                       </p>
                     </div>
                     <button
-                      onClick={() => setShowCheckout(false)}
+                      onClick={closeCheckout}
                       className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-black/60 transition hover:bg-black/5"
                     >
                       <X size={20} />
@@ -327,7 +444,7 @@ export function CartPage() {
                   <div className="flex-1 overflow-y-auto p-5">
                     <CheckoutForm
                       totalPrice={totalPrice}
-                      onClose={() => setShowCheckout(false)}
+                      onClose={closeCheckout}
                     />
                   </div>
                 </div>
@@ -358,7 +475,9 @@ export function CartPage() {
                     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
                       <Trash2 size={28} className="text-red-500" />
                     </div>
-                    <h3 className="mb-2 text-xl font-semibold">¿Vaciar carrito?</h3>
+                    <h3 className="mb-2 text-xl font-semibold">
+                      ¿Vaciar carrito?
+                    </h3>
                     <p className="text-sm text-black/60">
                       Se eliminarán todos los artículos de tu carrito.
                     </p>

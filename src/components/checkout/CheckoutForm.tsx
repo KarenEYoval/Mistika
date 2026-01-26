@@ -25,15 +25,13 @@ type Props = {
 const shippingOptions = [
   {
     value: "standard",
-    label: "Estándar",
-    days: "5-7 días hábiles",
-    cost: 150,
+    label: "Xalapa",
+    cost: 100,
   },
   {
     value: "express",
-    label: "Express",
-    days: "2-3 días hábiles",
-    cost: 250,
+    label: "Fuera de Xalapa",
+    cost: 180,
   },
 ] as const;
 
@@ -68,7 +66,8 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
   const shippingCost =
     totalPrice >= 500
       ? 0
-      : shippingOptions.find((o) => o.value === formData.shippingMethod)?.cost || 150;
+      : shippingOptions.find((o) => o.value === formData.shippingMethod)
+          ?.cost || 150;
   const tax = totalPrice * 0.16;
   const totalAmount = totalPrice + shippingCost + tax;
 
@@ -103,8 +102,6 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
       if (result.success && result.data) {
         toast.success("¡Pedido creado! Redirigiendo al pago...");
         clearCart();
-        // In the future, redirect to Mercado Pago here
-        // For now, redirect to order confirmation
         router.push(`/orders/${result.data.orderNumber}`);
       }
     } catch (error: unknown) {
@@ -264,7 +261,7 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
       <div className="overflow-hidden rounded-xl border border-black/10">
         <div className="flex items-center gap-3 border-b border-black/10 bg-black/5 px-4 py-3">
           <Truck size={16} className="text-black/60" />
-          <span className="text-sm font-semibold">Método de envío</span>
+          <span className="text-sm font-semibold">Envío</span>
           {totalPrice >= 500 && (
             <span className="ml-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
               ¡Envío gratis!
@@ -293,7 +290,6 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
                   />
                   <div>
                     <p className="text-sm font-medium">{option.label}</p>
-                    <p className="text-xs text-black/50">{option.days}</p>
                   </div>
                 </div>
                 <span className="text-sm font-semibold">
@@ -350,7 +346,9 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
             <div className="border-t border-black/10 pt-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold">Total a pagar</span>
-                <span className="text-xl font-bold">${totalAmount.toFixed(2)} MXN</span>
+                <span className="text-xl font-bold">
+                  ${totalAmount.toFixed(2)} MXN
+                </span>
               </div>
             </div>
           </div>
@@ -364,10 +362,12 @@ export function CheckoutForm({ totalPrice, onClose }: Props) {
             <CreditCard size={20} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-blue-900">Pago seguro con Mercado Pago</p>
+            <p className="font-semibold text-blue-900">
+              Pago seguro con Mercado Pago
+            </p>
             <p className="mt-1 text-sm text-blue-700">
-              Al confirmar, serás redirigido a Mercado Pago para completar tu pago con
-              tarjeta de crédito o débito de forma segura.
+              Al confirmar, serás redirigido a Mercado Pago para completar tu
+              pago con tarjeta de crédito o débito de forma segura.
             </p>
           </div>
         </div>
